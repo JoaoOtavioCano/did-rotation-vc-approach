@@ -6,15 +6,18 @@ import datetime
 
 
 async def main():
-    with open("key.jwk", "r") as f:
-        key = f.read().strip()
-    f.close()
+    try:
+        with open("key.jwk", "r") as f:
+            key = f.read().strip()
+        f.close()
+    except FileNotFoundError:
+        print("Error: add a key.jwk file with the key to the directory")
+        return
 
     parser = argparse.ArgumentParser()
     parser.add_argument("old_did", help="DID of the old method")
     parser.add_argument("new_did", help="DID of the new method")
     args = parser.parse_args()
-    print(f"old: {args.old_did}\nnew: {args.new_did}")
 
     issuance_date = datetime.datetime.utcnow().isoformat() + "Z"
 
