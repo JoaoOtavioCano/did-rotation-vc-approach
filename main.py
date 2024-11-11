@@ -40,12 +40,17 @@ async def main():
         "proofFormat": "jwt"
     }
 
-    signed_credential = await didkit.issue_credential(
-        json.dumps(credential),
-        json.dumps(didkit_options),
-        key)
+    try: 
+        signed_credential = await didkit.issue_credential(
+            json.dumps(credential),
+            json.dumps(didkit_options),
+            key)
+    except didkit.DIDKitException:
+        print("Error: DID not found")
+        return
     
-    print(signed_credential)
+    with open("signed_credential.json", "w") as f:
+        f.write(signed_credential)
 
 
 
