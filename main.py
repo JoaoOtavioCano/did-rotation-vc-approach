@@ -5,7 +5,11 @@ import didkit
 import datetime
 
 
-def main():
+async def main():
+    with open("key.jwk", "r") as f:
+        key = f.read().strip()
+    f.close()
+
     parser = argparse.ArgumentParser()
     parser.add_argument("old_did", help="DID of the old method")
     parser.add_argument("new_did", help="DID of the new method")
@@ -13,6 +17,9 @@ def main():
     print(f"old: {args.old_did}\nnew: {args.new_did}")
 
     issuance_date = datetime.datetime.utcnow().isoformat() + "Z"
+
+    verification_method = await didkit.key_to_verification_method("key", key)
+
     credential = {
         "@context": "https://www.w3.org/2018/credentials/v1",
         "type": ["VerifiableCredential", "DIDRotationCredential"],
@@ -24,9 +31,20 @@ def main():
         },
     }
 
-    print(json.dumps(credential, indent=2))
+    didkit_options = {
+        "proofPurpose": "assertionMethod",
+        "verificationMethod": verification_method,
+        "proofFormat": "jwt"
+    }
+
+    signed_credential = await didkit.issue_credential(
+        json.dumps(credential),
+        json.dumps(didkit_options),
+        key)
+    
+    print(signed_credential)
 
 
 
 if __name__ == '__main__':
-    main()
+    asyncio.run(main())
