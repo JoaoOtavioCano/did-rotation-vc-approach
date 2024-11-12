@@ -1,25 +1,19 @@
-# Define Python version and virtual environment directory
-PYTHON_VERSION = 3.11.4
-VENV_DIR = venv
+# Makefile
 
-# Define requirements file
-REQUIREMENTS = requirements.txt
+# Variables
+VENV_DIR := .venv
+PYTHON := python3
 
-# Command to create virtual environment with specified Python version
-$(VENV_DIR)/bin/python:
-	@echo "Creating virtual environment with Python $(PYTHON_VERSION)..."
-	pyenv install -s $(PYTHON_VERSION)
-	pyenv local $(PYTHON_VERSION)
-	python3 -m venv $(VENV_DIR)
-
-# Install dependencies in the virtual environment
+# Target to create virtual environment and install dependencies
 .PHONY: build
-build: $(VENV_DIR)/bin/python
-	@echo "Installing dependencies from $(REQUIREMENTS)..."
-	$(VENV_DIR)/bin/pip install -r $(REQUIREMENTS)
+build: $(VENV_DIR)/bin/activate
 
-# Clean up virtual environment
+$(VENV_DIR)/bin/activate: requirements.txt
+	$(PYTHON) -m venv $(VENV_DIR)
+	$(VENV_DIR)/bin/pip install -r requirements.txt
+	touch $(VENV_DIR)/bin/activate
+
+# Target to clean the virtual environment
 .PHONY: clean
 clean:
-	@echo "Removing virtual environment..."
 	rm -rf $(VENV_DIR)
