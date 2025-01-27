@@ -16,7 +16,7 @@ async def main():
 
     try:
         with open(args.old_did_key_file, "r") as f:
-            old_key = f.read().strip()
+            old_key = f.readline()
         f.close()
     except FileNotFoundError:
         print("Error: add a .jwk file with the old DID method key to the directory")
@@ -24,7 +24,7 @@ async def main():
     
     try:
         with open(args.new_did_key_file, "r") as f:
-            new_key = f.read().strip()
+            new_key = f.readline()
         f.close()
     except FileNotFoundError:
         print("Error: add a .jwk file with the new DID method key to the directory")
@@ -35,40 +35,35 @@ async def main():
 
 
 async def issue_vc(issuer_did, issuer_key, holder_did, output):
-    issuance_date = datetime.datetime.utcnow().isoformat() + "Z"
+    issuance_date = datetime.datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
 
-    did_method = str(issuer_did).split(":")[1]
-
-    verification_method = await didkit.key_to_verification_method(did_method, issuer_key)
 
     credential = {
-        "@context": "https://www.w3.org/2018/credentials/v1",
+        "@context": [
+            "https://www.w3.org/2018/credentials/v1",
+            {
+                "sameControllerAs": "ex:did"
+            }
+        ],
         "type": ["VerifiableCredential", "DIDRotationCredential"],
-        "issuer": f"{issuer_did}",
-        "issuanceDate": f"{issuance_date}",
+        "issuer": issuer_did,
+        "issuanceDate": issuance_date,
         "credentialSubject": {
-            "id": f"{holder_did}",
-            "sameControllerAs": f"{holder_did}",
-        },
+            "id": holder_did,
+            "sameControllerAs": issuer_did
+        }
     }
 
-    didkit_options = {
-        "proofPurpose": "assertionMethod",
-        "verificationMethod": verification_method,
-        "proofFormat": "jwt"
-    }
 
-    try: 
-        signed_credential = await didkit.issue_credential(
-            json.dumps(credential),
-            json.dumps(didkit_options),
-            issuer_key)
-    except didkit.DIDKitException:
-        print("Error: DID not found")
-        return
+    signed_credential = await didkit.issue_credential(
+        json.dumps(credential),
+        json.dumps({}),
+        issuer_key)
+
     
     with open(output, "w") as f:
         f.write(signed_credential)
+    f.close()
 
 if __name__ == '__main__':
     asyncio.run(main())
