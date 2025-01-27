@@ -1,5 +1,9 @@
-key.jwk
-newkey.jwk
+old_key.jwk
+new_key.jwk
+old_did.txt
+new_did.txt
+test.py
 new_did_signed_credential.json
 old_did_signed_credential.json
+.venv
 /docs
