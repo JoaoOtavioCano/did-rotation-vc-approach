@@ -115,9 +115,48 @@ async def verify_presentation(presentation_path):
     except FileNotFoundError:
         print("Error: presentation not found")
         exit()
+
+    holder = signed_presentation["holder"]
+    if len(signed_presentation["verifiableCredential"]) < 2:
+        print("Presentation invalid because does not contain all the credentials")
+        return
+    credential01 = signed_presentation["verifiableCredential"][0]
+    credential02 = signed_presentation["verifiableCredential"][1]
+
+    try:
+        verification_result = await didkit.verify_credential(
+            json.dumps(credential01),
+            json.dumps({"proofPurpose":"assertionMethod"})
+        )
+    except:
+        print("Error: something went wrong")
+        exit()
+    verification_result = json.loads(verification_result)
+    if verification_result["errors"] != [] or verification_result["warnings"] != []:
+        print("Presentation invalid because one of the credentials is invalid")
+        print("Errors:" + verification_result["errors"])
+        print("Warnings:" + verification_result["warnings"])
+        return
     
     try:
-        result = await didkit.verify_presentation(
+        verification_result = await didkit.verify_credential(
+            json.dumps(credential02),
+            json.dumps({"proofPurpose":"assertionMethod"})
+        )
+    except:
+        print("Error: something went wrong")
+        exit()
+    verification_result = json.loads(verification_result)
+    if verification_result["errors"] != [] or verification_result["warnings"] != []:
+        print("Presentation invalid because one of the credentials is invalid")
+        print("Errors:" + verification_result["errors"])
+        print("Warnings:" + verification_result["warnings"])
+        return
+
+
+    
+    try:
+        verification_result = await didkit.verify_presentation(
             json.dumps(signed_presentation),
             json.dumps({"proofPurpose":"authentication"})
         )
@@ -125,10 +164,10 @@ async def verify_presentation(presentation_path):
         print("Error: something went wrong")
         exit()
 
-    result = json.loads(result)
-    if result["errors"] != [] or result["warnings"] != []:
-        print("Errors:" + result["errors"])
-        print("Warnings:" + result["warnings"])
+    verification_result = json.loads(verification_result)
+    if verification_result["errors"] != [] or verification_result["warnings"] != []:
+        print("Errors:" + verification_result["errors"])
+        print("Warnings:" + verification_result["warnings"])
         return
 
     print("Presentation verified successfuly")
