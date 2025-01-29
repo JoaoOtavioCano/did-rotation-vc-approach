@@ -102,11 +102,36 @@ async def issue_presentation(holder, key_path, signed_credential01_path, signed_
             key
         )
     except:
-        print("Error: issueing presentation")
+        print("Error: something went wrong")
         exit()
 
     with open("presentation.jsonld", "w") as f:
         f.write(signed_presentation)
+
+async def verify_presentation(presentation_path):
+    try:
+        with open(presentation_path, "r") as f:
+            signed_presentation = json.loads(f.read())
+    except FileNotFoundError:
+        print("Error: presentation not found")
+        exit()
+    
+    try:
+        result = await didkit.verify_presentation(
+            json.dumps(signed_presentation),
+            json.dumps({"proofPurpose":"authentication"})
+        )
+    except:
+        print("Error: something went wrong")
+        exit()
+
+    result = json.loads(result)
+    if result["errors"] != [] or result["warnings"] != []:
+        print("Errors:" + result["errors"])
+        print("Warnings:" + result["warnings"])
+        return
+
+    print("Presentation verified successfuly")
 
 
 if __name__ == '__main__':
