@@ -17,21 +17,21 @@ async def main():
     try:
         with open(args.old_did_key_file, "r") as f:
             old_key = f.readline()
-        f.close()
+
     except FileNotFoundError:
         print("Error: add a .jwk file with the old DID method key to the directory")
-        return
+        exit()
     
     try:
         with open(args.new_did_key_file, "r") as f:
             new_key = f.readline()
-        f.close()
+
     except FileNotFoundError:
         print("Error: add a .jwk file with the new DID method key to the directory")
-        return
+        exit()
     
-    await issue_vc(args.new_did, new_key, args.old_did, "old_did_signed_credential.json")
-    await issue_vc(args.old_did, old_key, args.new_did, "new_did_signed_credential.json")
+    await issue_vc(args.new_did, new_key, args.old_did, "old_did_signed_credential.jsonld")
+    await issue_vc(args.old_did, old_key, args.new_did, "new_did_signed_credential.jsonld")
 
 
 async def issue_vc(issuer_did, issuer_key, holder_did, output):
@@ -63,7 +63,51 @@ async def issue_vc(issuer_did, issuer_key, holder_did, output):
     
     with open(output, "w") as f:
         f.write(signed_credential)
-    f.close()
+
+
+async def issue_presentation(holder, key_path, signed_credential01_path, signed_credential02_path):
+
+    try:
+        with open(key_path, "r") as f:
+            key = f.read()
+    except FileNotFoundError:
+        print("Error: key not found")
+        exit()
+    
+    try:
+        with open(signed_credential01_path, "r") as f:
+            signed_credential01 = json.loads(f.read())
+    except FileNotFoundError:
+        print("Error: signed credential not found")
+        exit()
+    
+    try:
+        with open(signed_credential02_path, "r") as f:
+            signed_credential02 = json.loads(f.read())
+    except FileNotFoundError:
+        print("Error: signed credential not found")
+        exit()
+
+    presentation = {
+        "@context": ["https://www.w3.org/2018/credentials/v1"],
+        "type": ["VerifiablePresentation"],
+        "holder": holder,
+        "verifiableCredential": [signed_credential01, signed_credential02]
+    }
+
+    try:    
+        signed_presentation = await didkit.issue_presentation(
+            json.dumps(presentation),
+            json.dumps({}),
+            key
+        )
+    except:
+        print("Error: issueing presentation")
+        exit()
+
+    with open("presentation.jsonld", "w") as f:
+        f.write(signed_presentation)
+
 
 if __name__ == '__main__':
     asyncio.run(main())
