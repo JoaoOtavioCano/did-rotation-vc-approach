@@ -152,6 +152,36 @@ async def verify_presentation(presentation_path):
         print("Errors:" + verification_result["errors"])
         print("Warnings:" + verification_result["warnings"])
         return
+    
+    if "DIDRotationCredential" not in credential01["type"]:
+        print("Presentation invalid because one of the credentials is invalid")
+        return
+    credential01_issuer = credential01["issuer"]
+    credential01_subject_id = credential01["credentialSubject"]["id"]
+    credential01_subject_sameControllerAs = credential01["credentialSubject"]["sameControllerAs"]
+    if credential01_issuer != credential01_subject_sameControllerAs:
+        print("Presentation invalid because one of the credentials is invalid")
+        return
+    if credential01_issuer != holder and credential01_subject_id != holder:
+        print("Presentation invalid because one of the credentials is invalid")
+        return
+    
+    if "DIDRotationCredential" not in credential02["type"]:
+        print("Presentation invalid because one of the credentials is invalid")
+        return
+    credential02_issuer = credential02["issuer"]
+    credential02_subject_id = credential02["credentialSubject"]["id"]
+    credential02_subject_sameControllerAs = credential02["credentialSubject"]["sameControllerAs"]
+    if credential02_issuer != credential02_subject_sameControllerAs:
+        print("Presentation invalid because one of the credentials is invalid")
+        return
+    if credential02_issuer != holder and credential02_subject_id != holder:
+        print("Presentation invalid because one of the credentials is invalid")
+        return
+    
+    if credential02_issuer != credential01_subject_id or credential02_subject_id != credential01_issuer:
+        print("Presentation invalid because one of the credentials is invalid")
+        return
 
 
     
