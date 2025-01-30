@@ -6,35 +6,24 @@ import datetime
 
 
 async def main():
+    args = parse_args()
+    if args.command == "issue_vcs":
+        await issue_vc(args.did_01, args.key_file_01, args.did_02, "signed_credential_01.jsonld")
+        await issue_vc(args.did_02, args.key_file_02, args.did_01, "signed_credential_02.jsonld")
+    elif args.command == "issue_presentation":
+        await issue_presentation(args.holder, args.key_file, args.signed_credential1, args.signed_credential2)
+    elif args.command == "verify_presentation":
+        await verify_presentation(args.presentation_file)
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("old_did", help="DID of the old method")
-    parser.add_argument("old_did_key_file", help="jwk file with keys of the old method")
-    parser.add_argument("new_did", help="DID of the new method")
-    parser.add_argument("new_did_key_file", help="jwk file with keys of the new method")
-    args = parser.parse_args()
-
+async def issue_vc(issuer_did, issuer_key_file, holder_did, output):
     try:
-        with open(args.old_did_key_file, "r") as f:
-            old_key = f.readline()
+        with open(issuer_key_file, "r") as f:
+            issuer_key = f.readline()
 
     except FileNotFoundError:
-        print("Error: add a .jwk file with the old DID method key to the directory")
+        print("Error: " + issuer_key_file + " not found")
         exit()
-    
-    try:
-        with open(args.new_did_key_file, "r") as f:
-            new_key = f.readline()
 
-    except FileNotFoundError:
-        print("Error: add a .jwk file with the new DID method key to the directory")
-        exit()
-    
-    await issue_vc(args.new_did, new_key, args.old_did, "old_did_signed_credential.jsonld")
-    await issue_vc(args.old_did, old_key, args.new_did, "new_did_signed_credential.jsonld")
-
-
-async def issue_vc(issuer_did, issuer_key, holder_did, output):
     issuance_date = datetime.datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
 
 
@@ -134,8 +123,8 @@ async def verify_presentation(presentation_path):
     verification_result = json.loads(verification_result)
     if verification_result["errors"] != [] or verification_result["warnings"] != []:
         print("Presentation invalid because one of the credentials is invalid")
-        print("Errors:" + verification_result["errors"])
-        print("Warnings:" + verification_result["warnings"])
+        print("Errors:" + str(verification_result["errors"]))
+        print("Warnings:" + str(verification_result["warnings"]))
         return
     
     try:
@@ -149,8 +138,8 @@ async def verify_presentation(presentation_path):
     verification_result = json.loads(verification_result)
     if verification_result["errors"] != [] or verification_result["warnings"] != []:
         print("Presentation invalid because one of the credentials is invalid")
-        print("Errors:" + verification_result["errors"])
-        print("Warnings:" + verification_result["warnings"])
+        print("Errors:" + str(verification_result["errors"]))
+        print("Warnings:" + str(verification_result["warnings"]))
         return
     
     if "DIDRotationCredential" not in credential01["type"]:
@@ -163,7 +152,7 @@ async def verify_presentation(presentation_path):
         print("Presentation invalid because one of the credentials is invalid")
         return
     if credential01_issuer != holder and credential01_subject_id != holder:
-        print("Presentation invalid because one of the credentials is invalid")
+        print("Presentation invalid")
         return
     
     if "DIDRotationCredential" not in credential02["type"]:
@@ -176,11 +165,11 @@ async def verify_presentation(presentation_path):
         print("Presentation invalid because one of the credentials is invalid")
         return
     if credential02_issuer != holder and credential02_subject_id != holder:
-        print("Presentation invalid because one of the credentials is invalid")
+        print("Presentation invalid")
         return
     
     if credential02_issuer != credential01_subject_id or credential02_subject_id != credential01_issuer:
-        print("Presentation invalid because one of the credentials is invalid")
+        print("Presentation invalid")
         return
 
 
@@ -196,12 +185,35 @@ async def verify_presentation(presentation_path):
 
     verification_result = json.loads(verification_result)
     if verification_result["errors"] != [] or verification_result["warnings"] != []:
-        print("Errors:" + verification_result["errors"])
-        print("Warnings:" + verification_result["warnings"])
+        print("Errors:" +str( verification_result["errors"]))
+        print("Warnings:" + str(verification_result["warnings"]))
         return
 
     print("Presentation verified successfuly")
 
+def parse_args():
+    parser = argparse.ArgumentParser(description="DID Rotation Tool")
+    subparsers = parser.add_subparsers(dest="command", required=True, help="Available commands")
+
+    # issue_vc subcommand
+    vc_parser = subparsers.add_parser("issue_vcs", help="Issue a verifiable credential")
+    vc_parser.add_argument("did_01", help="DID#1")
+    vc_parser.add_argument("key_file_01", help="JWK file with keys of did method #1")
+    vc_parser.add_argument("did_02", help="DID#2")
+    vc_parser.add_argument("key_file_02", help="JWK file with keys of did method #2")
+
+    # issue_presentation subcommand
+    vp_parser = subparsers.add_parser("issue_presentation", help="Issue a verifiable presentation")
+    vp_parser.add_argument("holder", help="DID of the holder")
+    vp_parser.add_argument("key_file", help="JWK file with keys of the holder")
+    vp_parser.add_argument("signed_credential1", help="Path to the first signed credential")
+    vp_parser.add_argument("signed_credential2", help="Path to the second signed credential")
+    
+    # verify_presentation subcommand
+    verify_parser = subparsers.add_parser("verify_presentation", help="Verify a verifiable presentation")
+    verify_parser.add_argument("presentation_file", help="Path to the signed presentation file")
+    
+    return parser.parse_args()
 
 if __name__ == '__main__':
     asyncio.run(main())
