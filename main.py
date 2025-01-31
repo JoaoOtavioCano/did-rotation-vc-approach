@@ -8,8 +8,8 @@ import datetime
 async def main():
     args = parse_args()
     if args.command == "issue_vcs":
-        await issue_vc(args.did_01, args.key_file_01, args.did_02, "signed_credential_01.jsonld")
-        await issue_vc(args.did_02, args.key_file_02, args.did_01, "signed_credential_02.jsonld")
+        await issue_vc(args.did_01, args.key_file_01, args.did_02, "./signed_credential_01.jsonld")
+        await issue_vc(args.did_02, args.key_file_02, args.did_01, "./signed_credential_02.jsonld")
     elif args.command == "issue_presentation":
         await issue_presentation(args.holder, args.key_file, args.signed_credential1, args.signed_credential2)
     elif args.command == "verify_presentation":
@@ -94,7 +94,7 @@ async def issue_presentation(holder, key_path, signed_credential01_path, signed_
         print("Error: something went wrong")
         exit()
 
-    with open("presentation.jsonld", "w") as f:
+    with open("./presentation.jsonld", "w") as f:
         f.write(signed_presentation)
 
 async def verify_presentation(presentation_path):
