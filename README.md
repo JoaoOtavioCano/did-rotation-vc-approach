@@ -13,12 +13,12 @@ This project provides a command-line interface (CLI) for:
 4.  Verifying Verifiable Presentations.
 
 ## Project Structure
-did-rotation-vc-approach/
-├── main.py         # The main Python script containing the CLI logic.
-├── Makefile        # Makefile for building and running the project in Docker.
-├── Dockerfile      # Dockerfile for creating the project's containerized environment.
-├── requirements.txt # List of Python dependencies.
-└── README.md       # This file.
+did-rotation-vc-approach/  
+|─ main.py         # The main Python script containing the CLI logic.  
+|─ Makefile        # Makefile for building and running the project in Docker.  
+|─ Dockerfile      # Dockerfile for creating the project's containerized environment.  
+|─ requirements.txt # List of Python dependencies.  
+|─ README.md       # This file.  
 
 ## Getting Started
 
@@ -33,7 +33,7 @@ did-rotation-vc-approach/
 1.  **Clone the repository:**
 
 ```bash
-git clone [https://github.com/JoaoOtavioCano/did-rotation-vc-approach.git](https://github.com/JoaoOtavioCano/did-rotation-vc-approach.git)
+git clone https://github.com/JoaoOtavioCano/did-rotation-vc-approach.git
 ```
 
 2.  **Go to the directory:**
@@ -48,13 +48,13 @@ cd did-rotation-vc-approach/
 make build
 ```
 
-4.  **Add your JWK key files to the directory**
+4.  **Add your JWK key files to the directory:**
 
-**You can delete the docker image if needed**
+5. **You can delete the docker image if needed:**
+
 ```bash
 make docker-clean
 ```
-
 
 ### Usage
 
