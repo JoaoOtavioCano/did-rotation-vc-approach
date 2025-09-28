@@ -101,3 +101,6 @@ This command will verify the presentation and print the result.
 * `Verifiable Credentials (VCs):` Digital credentials that are cryptographically signed and can be verified by relying parties.
 * `Verifiable Presentations (VPs):` Collections of VCs presented together to prove certain claims.
 * `JSON Web Key (JWK):` A JSON data structure that represents cryptographic keys.
+
+## Important Disclaimer
+> The only DID Methods supported by this proof of concept are: did:tz and did:key
